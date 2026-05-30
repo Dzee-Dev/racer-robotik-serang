@@ -20,8 +20,8 @@ export default function AdminPage() {
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminUser, setAdminUser] = useState<User | null>(null);
-  const [loginEmail, setLoginEmail] = useState("admin@racer.id");
-  const [loginPassword, setLoginPassword] = useState("adminracer123");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 

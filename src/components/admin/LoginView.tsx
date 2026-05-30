@@ -89,13 +89,6 @@ export default function LoginView({
           </button>
         </form>
 
-        {/* Developer credentials warning box */}
-        <div className="mt-6 p-3 bg-slate-950/60 border border-slate-800 rounded-xl text-[10px] text-slate-500 space-y-1">
-          <div className="font-bold text-slate-400">🔑 Kredensial Uji Coba (Seed Data):</div>
-          <div>Email: <span className="text-brand-cyan select-all font-mono">admin@racer.id</span></div>
-          <div>Sandi: <span className="text-brand-cyan select-all font-mono">adminracer123</span></div>
-        </div>
-
         <div className="mt-6 text-center">
           <a href="/" className="text-xs text-slate-400 hover:text-white transition-colors underline">
             Kembali ke Beranda Web
@@ -103,5 +96,6 @@ export default function LoginView({
         </div>
       </div>
     </div>
+
   );
 }
