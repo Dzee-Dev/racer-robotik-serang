@@ -14,8 +14,8 @@ export async function POST(request: Request) {
     }
 
     // Default seeded admin credentials
-    const defaultAdminEmail = "";
-    const defaultAdminPassword = "";
+    const defaultAdminEmail = "admin@racer.id";
+    const defaultAdminPassword = "adminracer123";
 
     if (isSupabaseConfigured) {
       // Direct Supabase Signin
