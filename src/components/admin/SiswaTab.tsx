@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Search, Filter, Eye, XCircle, CheckCircle2 } from "lucide-react";
-import { Siswa } from "@/lib/types";
+import { Siswa, formatRegistrationId } from "@/lib/types";
 
 interface SiswaTabProps {
   siswaList: Siswa[];
@@ -114,9 +114,11 @@ export default function SiswaTab({ siswaList, onUpdateStatus }: SiswaTabProps) {
                 <tr key={siswa.id} className="border-b border-white/5 hover:bg-slate-900/30 transition-all">
                   <td className="p-4">
                     <div className="font-bold text-white text-sm">{siswa.nama_lengkap}</div>
+                    <div className="text-[10px] text-brand-cyan/85 font-mono font-bold mt-0.5">{formatRegistrationId(siswa.id, siswa.created_at)}</div>
                     <div className="text-[10px] text-slate-500 mt-0.5">{siswa.email}</div>
                     <div className="text-[10px] text-slate-500">{siswa.no_telp}</div>
                   </td>
+
                   <td className="p-4">
                     <span className="font-bold text-slate-300 block">{siswa.jenjang} - {siswa.kelas}</span>
                     <span className="text-[10px] text-slate-500 block mt-0.5">{siswa.asal_sekolah}</span>
@@ -176,7 +178,7 @@ export default function SiswaTab({ siswaList, onUpdateStatus }: SiswaTabProps) {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-lg font-bold text-white">Verifikasi Slip Transfer</h3>
-                  <span className="text-[9px] text-brand-cyan font-bold block mt-0.5 font-mono">Pendaftaran ID: {selectedSiswa.id}</span>
+                  <span className="text-[9px] text-brand-cyan font-bold block mt-0.5 font-mono">Pendaftaran ID: {formatRegistrationId(selectedSiswa.id, selectedSiswa.created_at)}</span>
                 </div>
                 <button 
                   onClick={() => {

@@ -63,3 +63,21 @@ export interface News {
   author_name?: string; // hydrated
   created_at: string;
 }
+
+export const formatRegistrationId = (id: string, createdAt?: string) => {
+  if (!id) return "";
+  
+  // 1. Get Date prefix (YYMMDD)
+  const dateObj = createdAt ? new Date(createdAt) : new Date();
+  const yy = String(dateObj.getFullYear()).slice(-2);
+  const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const dd = String(dateObj.getDate()).padStart(2, "0");
+  const datePrefix = `${yy}${mm}${dd}`;
+  
+  // 2. Extract deterministic unique suffix from the ID string (first 4 alphanumeric characters)
+  const cleanId = id.replace("siswa-", "").replace(/-/g, "").toUpperCase();
+  const suffix = cleanId.slice(0, 4) || "000";
+  
+  return `RC-${datePrefix}-${suffix}`;
+};
+

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { mockDb } from "@/lib/mockDb";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { formatRegistrationId } from "@/lib/types";
 
 export default function PendaftaranForm() {
   const [step, setStep] = useState(1);
@@ -771,8 +772,9 @@ export default function PendaftaranForm() {
               <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 text-left max-w-md mx-auto space-y-3 text-xs sm:text-sm">
                 <div className="flex justify-between border-b border-slate-800 pb-2">
                   <span className="text-slate-400">ID Pendaftaran</span>
-                  <span className="font-bold text-brand-cyan">{successData.id}</span>
+                  <span className="font-bold text-brand-cyan">{formatRegistrationId(successData.id, successData.created_at)}</span>
                 </div>
+
                 <div className="flex justify-between">
                   <span className="text-slate-400">Nama Siswa</span>
                   <span className="text-white font-bold">{successData.nama_lengkap}</span>
