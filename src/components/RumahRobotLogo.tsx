@@ -20,6 +20,7 @@ export default function RumahRobotLogo({ className = "", size = "md" }: LogoProp
   return (
     <div className={`flex items-center select-none ${className}`}>
       {/* Official Transparent PNG Logo converted from the user's correct photo */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img 
         src="/media__1780141191072_transparent.png" 
         alt="Rumah Robot Banten Logo" 

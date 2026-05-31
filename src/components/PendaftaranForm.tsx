@@ -697,6 +697,7 @@ export default function PendaftaranForm() {
                     
                     {formData.bukti_pembayaran_preview ? (
                       <div className="space-y-3 w-full text-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                           src={formData.bukti_pembayaran_preview} 
                           alt="Bukti Transfer Preview" 
