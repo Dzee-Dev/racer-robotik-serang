@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { LogOut } from "lucide-react";
 import { User, Siswa, Peralatan, PeralatanLog, News } from "@/lib/types";
 
 // Import Modular Components
@@ -113,10 +114,17 @@ export default function AdminPage() {
     }
   };
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     sessionStorage.removeItem("racer_admin_session");
     setAdminUser(null);
     setIsAuthenticated(false);
+    setShowLogoutConfirm(false);
   };
 
   // Student verification status PUT handler
@@ -365,6 +373,49 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Modal Overlay */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="w-full max-w-sm bg-slate-900 border border-white/5 rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center space-y-6"
+            >
+              {/* Decorative glows */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-rose/5 blur-3xl rounded-full pointer-events-none" />
+              
+              <div className="mx-auto w-12 h-12 rounded-full bg-brand-rose/10 flex items-center justify-center text-brand-rose">
+                <LogOut className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-white">Konfirmasi Log Out</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Apakah Anda yakin ingin keluar dari Panel Administrator PT Racer Robotik Serang?
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold py-2.5 rounded-xl transition-all text-xs"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="bg-gradient-to-r from-brand-rose to-red-600 text-white hover:shadow-glow-rose font-bold py-2.5 rounded-xl transition-all text-xs"
+                >
+                  Ya, Keluar
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
