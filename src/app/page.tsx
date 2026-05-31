@@ -250,7 +250,7 @@ export default function Home() {
                 <div>
                   <h4 className="text-white font-bold text-sm">WhatsApp Kontak Layanan</h4>
                   <p className="text-slate-400 text-xs sm:text-sm mt-1">
-                    +62 812-3000-9201 (Pendaftaran Cabang Serang)
+                    +62 838-7917-7420 (Pendaftaran Cabang Serang)
                   </p>
                 </div>
               </div>
