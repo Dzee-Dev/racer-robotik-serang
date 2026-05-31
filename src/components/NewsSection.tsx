@@ -20,8 +20,42 @@ export default function NewsSection({ isTeaser = false, className = "" }: NewsSe
 
   // Load news on mount
   useEffect(() => {
-    // Read only published news
-    setNewsList(mockDb.getNews().filter(n => n.status === "published"));
+    // 1. Initial load from local storage to prevent layout shift and enable offline support
+    try {
+      const offlineNews = mockDb.getNews().filter(n => n.status === "published");
+      setNewsList(offlineNews);
+    } catch (e) {
+      console.warn("Failed to load news from offline cache:", e);
+    }
+
+    // 2. Fetch live data from API route
+    let isMounted = true;
+    const fetchLiveNews = async () => {
+      try {
+        const response = await fetch("/api/news");
+        const result = await response.json();
+        if (isMounted && result.success && Array.isArray(result.data)) {
+          // Filter only published news
+          const publishedNews = result.data.filter((n: News) => n.status === "published");
+          setNewsList(publishedNews);
+          
+          // Sync back to local storage so offline mode is updated
+          try {
+            mockDb.saveNews(result.data);
+          } catch (storageErr) {
+            console.error("Failed to sync live news to offline storage:", storageErr);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch live news from API:", error);
+      }
+    };
+
+    fetchLiveNews();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const formatTanggal = (isoString: string) => {
