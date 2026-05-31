@@ -32,7 +32,7 @@ export default function NewsSection({ isTeaser = false, className = "" }: NewsSe
     let isMounted = true;
     const fetchLiveNews = async () => {
       try {
-        const response = await fetch("/api/news");
+        const response = await fetch("/api/news", { cache: "no-store" });
         const result = await response.json();
         if (isMounted && result.success && Array.isArray(result.data)) {
           // Filter only published news

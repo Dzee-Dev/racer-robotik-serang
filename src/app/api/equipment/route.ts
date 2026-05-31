@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { mockDb } from "@/lib/mockDb";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     if (isSupabaseConfigured) {

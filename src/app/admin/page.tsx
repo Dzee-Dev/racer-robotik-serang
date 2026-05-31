@@ -61,22 +61,22 @@ export default function AdminPage() {
     setIsLoading(true);
     try {
       // 1. Fetch Students
-      const resSiswa = await fetch("/api/register");
+      const resSiswa = await fetch("/api/register", { cache: "no-store" });
       const dataSiswa = await resSiswa.json();
       if (dataSiswa.success) setSiswaList(dataSiswa.data);
 
       // 2. Fetch Equipment
-      const resEq = await fetch("/api/equipment");
+      const resEq = await fetch("/api/equipment", { cache: "no-store" });
       const dataEq = await resEq.json();
       if (dataEq.success) setPeralatanList(dataEq.data);
 
       // 3. Fetch Logs
-      const resLogs = await fetch("/api/equipment-logs");
+      const resLogs = await fetch("/api/equipment-logs", { cache: "no-store" });
       const dataLogs = await resLogs.json();
       if (dataLogs.success) setLogsList(dataLogs.data);
 
       // 4. Fetch News
-      const resNews = await fetch("/api/news");
+      const resNews = await fetch("/api/news", { cache: "no-store" });
       const dataNews = await resNews.json();
       if (dataNews.success) setNewsList(dataNews.data);
     } catch (e) {
