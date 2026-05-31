@@ -7,6 +7,7 @@ import {
   CreditCard, Upload, CheckCircle2, AlertCircle, ChevronRight, ChevronLeft 
 } from "lucide-react";
 import { mockDb } from "@/lib/mockDb";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export default function PendaftaranForm() {
   const [step, setStep] = useState(1);
@@ -133,6 +134,58 @@ export default function PendaftaranForm() {
     setErrorMsg("");
 
     try {
+      let finalBuktiUrl = formData.bukti_pembayaran_preview;
+
+      // 1. Upload to Supabase Storage if configured and file exists
+      if (isSupabaseConfigured && formData.bukti_pembayaran) {
+        try {
+          const file = formData.bukti_pembayaran;
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("bukti-transfer")
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
+
+          if (uploadError) {
+            console.error("Storage upload error, falling back to data URL:", uploadError);
+          } else {
+            const { data } = supabase.storage
+              .from("bukti-transfer")
+              .getPublicUrl(filePath);
+            
+            if (data?.publicUrl) {
+              finalBuktiUrl = data.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.error("Supabase Storage upload failed:", storageErr);
+        }
+      } 
+      
+      // 2. Base64 conversion if running offline fallback (so it persists in LocalStorage)
+      if (!isSupabaseConfigured && formData.bukti_pembayaran) {
+        try {
+          const fileReaderPromise = (file: File): Promise<string> => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = (err) => reject(err);
+              reader.readAsDataURL(file);
+            });
+          };
+          
+          const base64Url = await fileReaderPromise(formData.bukti_pembayaran);
+          finalBuktiUrl = base64Url;
+        } catch (base64Err) {
+          console.error("Failed to convert image to Base64:", base64Err);
+        }
+      }
+
       // Create Siswa Object
       const newSiswaData = {
         nama_lengkap: formData.nama_lengkap,
@@ -146,11 +199,10 @@ export default function PendaftaranForm() {
         durasi_paket: formData.durasi_paket,
         jadwal_les: `${formData.hari_les}, ${formData.jam_les}`,
         harga: price,
-        bukti_pembayaran_url: formData.bukti_pembayaran_preview // Use blob preview as mock url
+        bukti_pembayaran_url: finalBuktiUrl
       };
 
-      // In real app, we would send this to /api/register with FormData. Let's make an API call representation
-      // We will fall back to local mockDb and also try hitting the real API if it exists.
+      // Send registration to API
       const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -170,7 +222,23 @@ export default function PendaftaranForm() {
       setStep(5);
     } catch (err) {
       console.error(err);
+      
       // Fallback in case of server offline
+      let finalBuktiUrl = formData.bukti_pembayaran_preview;
+      if (formData.bukti_pembayaran) {
+        try {
+          const fileReaderPromise = (file: File): Promise<string> => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = (err) => reject(err);
+              reader.readAsDataURL(file);
+            });
+          };
+          finalBuktiUrl = await fileReaderPromise(formData.bukti_pembayaran);
+        } catch (e) {}
+      }
+
       const savedData = mockDb.addSiswa({
         nama_lengkap: formData.nama_lengkap,
         email: formData.email,
@@ -183,7 +251,7 @@ export default function PendaftaranForm() {
         durasi_paket: formData.durasi_paket,
         jadwal_les: `${formData.hari_les}, ${formData.jam_les}`,
         harga: price,
-        bukti_pembayaran_url: formData.bukti_pembayaran_preview
+        bukti_pembayaran_url: finalBuktiUrl
       });
       setSuccessData(savedData);
       setStep(5);
@@ -191,6 +259,7 @@ export default function PendaftaranForm() {
       setIsSubmitting(false);
     }
   };
+
 
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
