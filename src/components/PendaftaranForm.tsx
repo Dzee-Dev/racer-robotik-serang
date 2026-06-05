@@ -7,7 +7,6 @@ import {
   CreditCard, Upload, CheckCircle2, AlertCircle, ChevronRight, ChevronLeft 
 } from "lucide-react";
 import { mockDb } from "@/lib/mockDb";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { formatRegistrationId } from "@/lib/types";
 
 export default function PendaftaranForm() {
@@ -122,6 +121,15 @@ export default function PendaftaranForm() {
     setErrorMsg("");
     setStep(prev => prev - 1);
   };
+  // Helper: Convert File to Base64 Data URL (offline fallback)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,55 +143,33 @@ export default function PendaftaranForm() {
     setErrorMsg("");
 
     try {
-      let finalBuktiUrl = formData.bukti_pembayaran_preview;
+      let finalBuktiUrl = "";
 
-      // 1. Upload to Supabase Storage if configured and file exists
-      if (isSupabaseConfigured && formData.bukti_pembayaran) {
+      // 1. Upload file to server-side API which handles Supabase Storage
+      if (formData.bukti_pembayaran) {
         try {
-          const file = formData.bukti_pembayaran;
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-          const filePath = `${fileName}`;
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", formData.bukti_pembayaran);
+          uploadFormData.append("bucket", "bukti-transfer");
 
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("bukti-transfer")
-            .upload(filePath, file, {
-              cacheControl: '3600',
-              upsert: true
-            });
+          const uploadRes = await fetch("/api/upload", {
+            method: "POST",
+            body: uploadFormData,
+          });
 
-          if (uploadError) {
-            console.error("Storage upload error, falling back to data URL:", uploadError);
+          const uploadResult = await uploadRes.json();
+
+          if (uploadResult.success && uploadResult.data?.url) {
+            finalBuktiUrl = uploadResult.data.url;
+            console.log("✅ Bukti transfer berhasil diunggah ke Supabase Storage:", finalBuktiUrl);
           } else {
-            const { data } = supabase.storage
-              .from("bukti-transfer")
-              .getPublicUrl(filePath);
-            
-            if (data?.publicUrl) {
-              finalBuktiUrl = data.publicUrl;
-            }
+            console.warn("⚠️ Upload ke cloud gagal, menggunakan fallback Base64:", uploadResult.message);
+            // Fallback to Base64 Data URL if server upload fails
+            finalBuktiUrl = await fileToBase64(formData.bukti_pembayaran);
           }
-        } catch (storageErr) {
-          console.error("Supabase Storage upload failed:", storageErr);
-        }
-      } 
-      
-      // 2. Base64 conversion if running offline fallback (so it persists in LocalStorage)
-      if (!isSupabaseConfigured && formData.bukti_pembayaran) {
-        try {
-          const fileReaderPromise = (file: File): Promise<string> => {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = (err) => reject(err);
-              reader.readAsDataURL(file);
-            });
-          };
-          
-          const base64Url = await fileReaderPromise(formData.bukti_pembayaran);
-          finalBuktiUrl = base64Url;
-        } catch (base64Err) {
-          console.error("Failed to convert image to Base64:", base64Err);
+        } catch (uploadErr) {
+          console.error("Upload error, fallback to Base64:", uploadErr);
+          finalBuktiUrl = await fileToBase64(formData.bukti_pembayaran);
         }
       }
 
@@ -225,18 +211,10 @@ export default function PendaftaranForm() {
       console.error(err);
       
       // Fallback in case of server offline
-      let finalBuktiUrl = formData.bukti_pembayaran_preview;
+      let finalBuktiUrl = formData.bukti_pembayaran_preview || "";
       if (formData.bukti_pembayaran) {
         try {
-          const fileReaderPromise = (file: File): Promise<string> => {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = (err) => reject(err);
-              reader.readAsDataURL(file);
-            });
-          };
-          finalBuktiUrl = await fileReaderPromise(formData.bukti_pembayaran);
+          finalBuktiUrl = await fileToBase64(formData.bukti_pembayaran);
         } catch (e) {}
       }
 

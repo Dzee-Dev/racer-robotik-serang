@@ -32,7 +32,8 @@ export default function NewsSection({ isTeaser = false, className = "" }: NewsSe
     let isMounted = true;
     const fetchLiveNews = async () => {
       try {
-        const response = await fetch("/api/news", { cache: "no-store" });
+        const url = isTeaser ? "/api/news?limit=3" : "/api/news";
+        const response = await fetch(url);
         const result = await response.json();
         if (isMounted && result.success && Array.isArray(result.data)) {
           // Filter only published news
@@ -56,7 +57,7 @@ export default function NewsSection({ isTeaser = false, className = "" }: NewsSe
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isTeaser]);
 
   const formatTanggal = (isoString: string) => {
     const date = new Date(isoString);

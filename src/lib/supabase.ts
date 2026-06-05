@@ -21,6 +21,12 @@ if (isSupabaseConfigured) {
 
 // Inisialisasi Klien Supabase
 export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    })
   : (null as any);
 

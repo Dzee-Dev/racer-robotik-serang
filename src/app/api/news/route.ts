@@ -4,20 +4,44 @@ import { mockDb } from "@/lib/mockDb";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get("limit");
+    const parsedLimit = limit ? parseInt(limit, 10) : null;
+
+    let responseData;
+
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase
+      let query = supabase
         .from("news")
         .select("*")
         .order("created_at", { ascending: false });
 
+      if (parsedLimit && !isNaN(parsedLimit)) {
+        query = query.limit(parsedLimit);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
-      return NextResponse.json({ success: true, data });
+      responseData = data;
     } else {
-      const data = mockDb.getNews();
-      return NextResponse.json({ success: true, data });
+      let data = mockDb.getNews();
+      if (parsedLimit && !isNaN(parsedLimit)) {
+        data = data.slice(0, parsedLimit);
+      }
+      responseData = data;
     }
+
+    // High performance CDN caching: 30 seconds fresh, 5 minutes stale-while-revalidate
+    return NextResponse.json(
+      { success: true, data: responseData },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=30, s-maxage=30, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error: any) {
     console.error("API GET News Error:", error);
     return NextResponse.json(
