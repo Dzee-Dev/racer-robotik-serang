@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { mockDb } from "@/lib/mockDb";
 
 export const dynamic = "force-dynamic";
+export const preferredRegion = "sin1";
 
 export async function GET(request: Request) {
   try {

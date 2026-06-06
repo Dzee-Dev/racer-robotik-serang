@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
+export const preferredRegion = "sin1";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
