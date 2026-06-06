@@ -3,7 +3,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { mockDb } from "@/lib/mockDb";
 
 export const dynamic = "force-dynamic";
-export const preferredRegion = "sin1";
+export const preferredRegion = "icn1";
 
 // GET all students (siswa) - used by Admin Dashboard
 export async function GET() {
